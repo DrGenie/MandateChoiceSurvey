@@ -1,4 +1,4 @@
-/* General Styyles */
+/* General Styles */
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #f7f9fc;
@@ -150,26 +150,15 @@ th {
   cursor: not-allowed;
 }
 
-/* Example Video Section */
+/* Example Animation / Iframe */
 .animated-demo {
   margin: 20px auto;
   text-align: center;
 }
 
-.video-wrapper iframe {
+.animated-demo iframe {
   border: 1px solid #ccc;
   border-radius: 4px;
-}
-
-/* Optional pulse animation if you want a pulsing circle (unused) */
-.pulse-svg {
-  animation: pulse 1s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%   { transform: scale(1);   opacity: 1; }
-  50%  { transform: scale(1.4); opacity: 0.6; }
-  100% { transform: scale(1);   opacity: 1; }
 }
 
 /* Thank You Message */
@@ -180,7 +169,7 @@ th {
   margin-top: 20px;
 }
 
-/* Responsive Adjustments for Mobile and Tablet */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
   body {
     padding: 10px;
