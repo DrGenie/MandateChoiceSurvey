@@ -5,7 +5,7 @@ let responses = [];
 let taskStartTime = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Static slides: Next button listeners
+  // Assign button event listeners for static slides
   document.getElementById("intro-next").addEventListener("click", nextSlide);
   document.getElementById("tutorial-next-2").addEventListener("click", nextSlide);
   document.getElementById("tutorial-next-3").addEventListener("click", nextSlide);
@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("example-next").addEventListener("click", nextSlide);
   document.getElementById("start-tasks").addEventListener("click", nextSlide);
 
-  // Static slides: Back button listeners
+  // Back button event listeners
   document.getElementById("tutorial-back-2").addEventListener("click", prevSlide);
   document.getElementById("tutorial-back-3").addEventListener("click", prevSlide);
   document.getElementById("tutorial-back-4").addEventListener("click", prevSlide);
@@ -28,9 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("example-back").addEventListener("click", prevSlide);
   document.getElementById("instr-back").addEventListener("click", prevSlide);
 
-  // Audio explanation example
+  // SpeechSynthesis example
   document.getElementById("play-explanation").addEventListener("click", () => {
-    const explanationText = "Here's an example of how different mandate attributes might influence your choice. Decide if you'd still pick the same mandate if you could opt out altogether. Remember: scope, threshold, coverage, incentives, exemption policy, and cost all matter.";
+    const explanationText = "This example shows how each mandate attribute can shape your preference. Look at the scope, threshold, coverage, incentives, exemptions, and cost. Decide whether you'd keep the same preference or choose no mandate if that was possible.";
     const utterance = new SpeechSynthesisUtterance(explanationText);
     const voices = speechSynthesis.getVoices();
     const auVoice = voices.find(v => v.lang === "en-AU");
@@ -40,10 +40,10 @@ document.addEventListener("DOMContentLoaded", () => {
     speechSynthesis.speak(utterance);
   });
 
-  // Generate the 9 dynamic tasks
+  // Generate dynamic tasks
   generateTaskSlides();
 
-  // Collect all slides
+  // Gather all slides
   slides = Array.from(document.querySelectorAll(".slide"));
   showSlide(currentSlideIndex);
 });
@@ -52,7 +52,7 @@ function showSlide(index) {
   slides.forEach((slide, i) => {
     slide.classList.toggle("active", i === index);
   });
-  // If it's a dynamic task slide, note the start time
+  // If we're on a dynamic task slide, record start time
   if (slides[index].classList.contains("task-slide")) {
     taskStartTime = Date.now();
   }
@@ -72,8 +72,8 @@ function prevSlide() {
   }
 }
 
+// Generate the 9 scenario-based tasks
 function generateTaskSlides() {
-  // Define 9 scenarios
   const block1 = {
     block: 1,
     scenarios: [
@@ -263,7 +263,7 @@ function generateTaskSlides() {
     title.textContent = `Scenario ${scenarioData.scenario}`;
     taskSlide.appendChild(title);
 
-    // Create comparison table
+    // Comparison table
     const table = document.createElement("table");
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
@@ -296,7 +296,7 @@ function generateTaskSlides() {
     table.appendChild(tbody);
     taskSlide.appendChild(table);
 
-    // Create a form for user choices
+    // Form for user choices
     const form = document.createElement("form");
     form.id = `form-task-${scenarioData.scenario}`;
     form.innerHTML = `
@@ -313,14 +313,14 @@ function generateTaskSlides() {
           </label>
         </fieldset>
         <fieldset>
-          <legend>If “no mandate” was an option, would you still keep the same choice?</legend>
+          <legend>If “no mandate” was an option, would you still keep your choice?</legend>
           <label>
             <input type="radio" name="not_choose" value="same" required>
-            Yes, I’d keep my choice.
+            Yes, I'd keep my chosen mandate.
           </label>
           <label>
             <input type="radio" name="not_choose" value="change" required>
-            No, I’d opt for no mandate.
+            No, I'd choose no mandate at all.
           </label>
         </fieldset>
       </div>
@@ -375,22 +375,29 @@ function saveResponse(form, responseTime) {
   });
 }
 
+// Submits responses via EmailJS and shows final slide
 function submitResponses() {
-  let emailContent = "Survey Responses:\n";
+  let emailContent = "Survey Responses:\n\n";
   responses.forEach(resp => {
-    emailContent += `Scenario: ${resp.scenario}, Choice: ${resp.choice}, Opt-Out?: ${resp.not_choose}, Time: ${resp.responseTime} ms\n`;
+    emailContent += `Scenario: ${resp.scenario}\n`;
+    emailContent += `Preferred Mandate: ${resp.choice}\n`;
+    emailContent += `Opt-out Choice: ${resp.not_choose}\n`;
+    emailContent += `Response Time (ms): ${resp.responseTime}\n\n`;
   });
 
   const templateParams = {
-    to_email: "mesfin.genie@newcastle.edu.au",
+    // Change these to match your EmailJS template fields
+    to_email: "mesfin.genie@newcastle.edu.au", // or your target email
     subject: "Vaccine Mandate Survey Responses",
     message: emailContent,
     timestamp: new Date().toLocaleString()
   };
 
+  // Make sure the service_id and template_id match what you've configured in EmailJS
   emailjs.send("service_zp0gsia", "template_2qu14s5", templateParams)
     .then(() => {
       showThankYou();
+      alert("Your responses have been sent! Check your inbox for confirmation.");
     }, (error) => {
       console.error("Submission failed:", error);
       alert("Error submitting your responses. Check your EmailJS settings or your internet connection and try again.");
@@ -399,35 +406,44 @@ function submitResponses() {
 
 function showThankYou() {
   const container = document.getElementById("survey-container");
-  container.innerHTML = `<div class="message">Thank you for completing the survey!</div>`;
+  container.innerHTML = `
+    <div class="message">
+      <h2>Thank You!</h2>
+      <p>Your responses have been submitted and emailed to the research team.</p>
+      <p>We appreciate your participation.</p>
+    </div>
+  `;
 }
 
+// Utility to format attribute labels, etc.
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+// Provide short tooltip-like descriptions
 function getAttributeDescription(attr) {
   const desc = {
-    scope: "Defines who must be vaccinated (e.g., only high-risk workers or everyone).",
-    threshold: "Specifies the infection rate that triggers the mandate (lower triggers act sooner).",
-    coverage: "The vaccination percentage needed to end the mandate (lower coverage lifts it earlier).",
-    incentives: "Any benefits offered to encourage vaccination, such as time off or subsidies.",
-    exemption: "Who is allowed to skip vaccination (strictly medical, or broader reasons).",
-    cost: "Financial or personal burden of getting vaccinated (travel, time off, fees)."
+    scope: "Defines who must be vaccinated, e.g., only high-risk roles or everyone.",
+    threshold: "Sets the infection rate that triggers the mandate. Lower thresholds = earlier intervention.",
+    coverage: "Vaccination percentage required to lift the mandate. Higher coverage = stricter requirement.",
+    incentives: "Financial or time-off benefits encouraging vaccination.",
+    exemption: "Acceptable reasons to refuse (medical, religious, or personal belief).",
+    cost: "Estimated burden (time, travel, fees). Low cost is minimal; high cost can be a big obstacle."
   };
   return desc[attr] || "";
 }
 
+// Provide icons based on attribute values
 function getIcon(attr, value) {
   if (attr === "scope") {
     return value.includes("High-risk")
-      ? `<span class="icon-tooltip" title="High-risk occupations only.">⚠️</span>`
-      : `<span class="icon-tooltip" title="All occupations and public spaces.">🌐</span>`;
+      ? `<span class="icon-tooltip" title="High-risk occupations only">⚠️</span>`
+      : `<span class="icon-tooltip" title="All occupations and public spaces">🌐</span>`;
   }
   if (attr === "threshold") {
-    if (value.includes("50 cases")) return `<span class="icon-tooltip" title="Early trigger.">🟢</span>`;
-    if (value.includes("100 cases")) return `<span class="icon-tooltip" title="Moderate trigger.">🟠</span>`;
-    return `<span class="icon-tooltip" title="Late trigger.">🔴</span>`;
+    if (value.includes("50 cases")) return `<span class="icon-tooltip" title="Early trigger">🟢</span>`;
+    if (value.includes("100 cases")) return `<span class="icon-tooltip" title="Moderate trigger">🟠</span>`;
+    return `<span class="icon-tooltip" title="Late trigger">🔴</span>`;
   }
   if (attr === "coverage") {
     let percentage = 0;
@@ -444,30 +460,29 @@ function getIcon(attr, value) {
   }
   if (attr === "incentives") {
     if (value.includes("No incentives")) {
-      return `<span class="icon-tooltip" title="No incentives provided.">🚫</span>`;
-    } else if (value.includes("Paid time off")) {
-      return `<span class="icon-tooltip" title="Paid time off.">🕒</span>`;
+      return `<span class="icon-tooltip" title="No additional perks">🚫</span>`;
+    } else if (value.includes("time off")) {
+      return `<span class="icon-tooltip" title="Paid time off">🕒</span>`;
     } else {
-      return `<span class="icon-tooltip" title="Financial incentives.">💸</span>`;
+      return `<span class="icon-tooltip" title="Financial rewards">💸</span>`;
     }
   }
   if (attr === "exemption") {
     if (value.includes("Medical exemptions only")) {
-      return `<span class="icon-tooltip" title="Only those with medical reasons.">🩺</span>`;
+      return `<span class="icon-tooltip" title="Strictly medical reasons">🩺</span>`;
     }
-    if (value.includes("religious") && value.includes("broad")) {
-      return `<span class="icon-tooltip" title="Medical, religious, and personal belief.">🩺🙏💡</span>`;
+    if (value.includes("broad personal belief")) {
+      return `<span class="icon-tooltip" title="Medical, religious, and personal reasons">🩺🙏💡</span>`;
     }
     if (value.includes("religious")) {
-      return `<span class="icon-tooltip" title="Medical and religious.">🩺🙏</span>`;
+      return `<span class="icon-tooltip" title="Medical and religious">🩺🙏</span>`;
     }
-    return `<span class="icon-tooltip" title="Unknown exemption policy.">❓</span>`;
   }
   if (attr === "cost") {
-    if (value.includes("A$0")) return `<span class="icon-tooltip" title="No cost.">$0</span>`;
-    if (value.includes("A$5")) return `<span class="icon-tooltip" title="Low cost.">$</span>`;
-    if (value.includes("A$20")) return `<span class="icon-tooltip" title="Moderate cost.">$$</span>`;
-    if (value.includes("A$50")) return `<span class="icon-tooltip" title="High cost.">$$$</span>`;
+    if (value.includes("A$0")) return `<span class="icon-tooltip" title="No cost">$0</span>`;
+    if (value.includes("A$5")) return `<span class="icon-tooltip" title="Low cost">$</span>`;
+    if (value.includes("A$20")) return `<span class="icon-tooltip" title="Moderate cost">$$</span>`;
+    if (value.includes("A$50")) return `<span class="icon-tooltip" title="High cost">$$$</span>`;
   }
   return "";
 }
