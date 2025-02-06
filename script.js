@@ -387,14 +387,15 @@ function submitResponses() {
     emailContent += `Response Time (ms): ${resp.responseTime}\n\n`;
   });
 
+  // Adjust these parameters to match your own EmailJS template fields
   const templateParams = {
-    to_email: "mesfin.genie@newcastle.edu.au", // Replace if desired
+    to_email: "mesfin.genie@newcastle.edu.au", // Change if needed
     subject: "Vaccine Mandate Survey Responses",
     message: emailContent,
     timestamp: new Date().toLocaleString()
   };
 
-  // Use your actual Service ID and Template ID from EmailJS
+  // Using your specified Service ID and Template ID
   emailjs.send("service_zp0gsia", "template_2qu14s5", templateParams)
     .then(() => {
       showThankYou();
@@ -412,7 +413,7 @@ function showThankYou() {
     <div class="message">
       <h2>Thank You!</h2>
       <p>Your responses have been submitted and emailed to the research team.</p>
-      <p>We truly appreciate your participation.</p>
+      <p>We appreciate your participation.</p>
     </div>
   `;
 }
@@ -426,9 +427,9 @@ function capitalize(str) {
 function getAttributeDescription(attr) {
   const desc = {
     scope: "Defines who must be vaccinated (e.g. only high-risk roles or everyone).",
-    threshold: "Specifies the infection rate that triggers the mandate. Earlier triggers intervene sooner.",
-    coverage: "Vaccination percentage needed to end the mandate. Higher coverage = stricter requirement.",
-    incentives: "Financial or time-off perks to encourage vaccination.",
+    threshold: "Sets the infection rate that triggers the mandate. Earlier triggers act sooner.",
+    coverage: "Vaccination percentage required to end the mandate. Higher coverage = stricter requirement.",
+    incentives: "Financial or time-off perks that encourage vaccination.",
     exemption: "Acceptable reasons to refuse vaccination (medical, religious, or personal belief).",
     cost: "Any out-of-pocket or time cost for getting vaccinated."
   };
