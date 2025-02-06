@@ -5,7 +5,7 @@ let responses = [];
 let taskStartTime = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Assign button event listeners for static slides
+  // Button event listeners for static slides
   document.getElementById("intro-next").addEventListener("click", nextSlide);
   document.getElementById("tutorial-next-2").addEventListener("click", nextSlide);
   document.getElementById("tutorial-next-3").addEventListener("click", nextSlide);
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // SpeechSynthesis example
   document.getElementById("play-explanation").addEventListener("click", () => {
-    const explanationText = "This example shows how each mandate attribute can shape your preference. Look at the scope, threshold, coverage, incentives, exemptions, and cost. Decide whether you'd keep the same preference or choose no mandate if that was possible.";
+    const explanationText = "This example shows how each mandate attribute can influence your preference. Consider scope, threshold, coverage, incentives, exemptions, and cost. Decide if you'd keep the same preference or choose no mandate at all.";
     const utterance = new SpeechSynthesisUtterance(explanationText);
     const voices = speechSynthesis.getVoices();
     const auVoice = voices.find(v => v.lang === "en-AU");
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     speechSynthesis.speak(utterance);
   });
 
-  // Generate dynamic tasks
+  // Create dynamic tasks
   generateTaskSlides();
 
   // Gather all slides
@@ -48,11 +48,12 @@ document.addEventListener("DOMContentLoaded", () => {
   showSlide(currentSlideIndex);
 });
 
+// Show the given slide index
 function showSlide(index) {
   slides.forEach((slide, i) => {
     slide.classList.toggle("active", i === index);
   });
-  // If we're on a dynamic task slide, record start time
+  // If it's a dynamic task slide, record start time
   if (slides[index].classList.contains("task-slide")) {
     taskStartTime = Date.now();
   }
@@ -263,7 +264,7 @@ function generateTaskSlides() {
     title.textContent = `Scenario ${scenarioData.scenario}`;
     taskSlide.appendChild(title);
 
-    // Comparison table
+    // Create a comparison table
     const table = document.createElement("table");
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
@@ -296,7 +297,7 @@ function generateTaskSlides() {
     table.appendChild(tbody);
     taskSlide.appendChild(table);
 
-    // Form for user choices
+    // A form for user choices
     const form = document.createElement("form");
     form.id = `form-task-${scenarioData.scenario}`;
     form.innerHTML = `
@@ -363,6 +364,7 @@ function generateTaskSlides() {
   });
 }
 
+// Save individual task response
 function saveResponse(form, responseTime) {
   const formData = new FormData(form);
   const choice = formData.get("choice");
@@ -375,7 +377,7 @@ function saveResponse(form, responseTime) {
   });
 }
 
-// Submits responses via EmailJS and shows final slide
+// Submit responses via EmailJS
 function submitResponses() {
   let emailContent = "Survey Responses:\n\n";
   responses.forEach(resp => {
@@ -386,14 +388,13 @@ function submitResponses() {
   });
 
   const templateParams = {
-    // Change these to match your EmailJS template fields
-    to_email: "mesfin.genie@newcastle.edu.au", // or your target email
+    to_email: "mesfin.genie@newcastle.edu.au", // Replace if desired
     subject: "Vaccine Mandate Survey Responses",
     message: emailContent,
     timestamp: new Date().toLocaleString()
   };
 
-  // Make sure the service_id and template_id match what you've configured in EmailJS
+  // Use your actual Service ID and Template ID from EmailJS
   emailjs.send("service_zp0gsia", "template_2qu14s5", templateParams)
     .then(() => {
       showThankYou();
@@ -404,31 +405,32 @@ function submitResponses() {
     });
 }
 
+// Display the final thank-you message
 function showThankYou() {
   const container = document.getElementById("survey-container");
   container.innerHTML = `
     <div class="message">
       <h2>Thank You!</h2>
       <p>Your responses have been submitted and emailed to the research team.</p>
-      <p>We appreciate your participation.</p>
+      <p>We truly appreciate your participation.</p>
     </div>
   `;
 }
 
-// Utility to format attribute labels, etc.
+// Utility to capitalize attribute labels in the table
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// Provide short tooltip-like descriptions
+// Short descriptions for tooltips
 function getAttributeDescription(attr) {
   const desc = {
-    scope: "Defines who must be vaccinated, e.g., only high-risk roles or everyone.",
-    threshold: "Sets the infection rate that triggers the mandate. Lower thresholds = earlier intervention.",
-    coverage: "Vaccination percentage required to lift the mandate. Higher coverage = stricter requirement.",
-    incentives: "Financial or time-off benefits encouraging vaccination.",
-    exemption: "Acceptable reasons to refuse (medical, religious, or personal belief).",
-    cost: "Estimated burden (time, travel, fees). Low cost is minimal; high cost can be a big obstacle."
+    scope: "Defines who must be vaccinated (e.g. only high-risk roles or everyone).",
+    threshold: "Specifies the infection rate that triggers the mandate. Earlier triggers intervene sooner.",
+    coverage: "Vaccination percentage needed to end the mandate. Higher coverage = stricter requirement.",
+    incentives: "Financial or time-off perks to encourage vaccination.",
+    exemption: "Acceptable reasons to refuse vaccination (medical, religious, or personal belief).",
+    cost: "Any out-of-pocket or time cost for getting vaccinated."
   };
   return desc[attr] || "";
 }
@@ -460,7 +462,7 @@ function getIcon(attr, value) {
   }
   if (attr === "incentives") {
     if (value.includes("No incentives")) {
-      return `<span class="icon-tooltip" title="No additional perks">🚫</span>`;
+      return `<span class="icon-tooltip" title="No extra perks">🚫</span>`;
     } else if (value.includes("time off")) {
       return `<span class="icon-tooltip" title="Paid time off">🕒</span>`;
     } else {
