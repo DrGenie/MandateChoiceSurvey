@@ -1,4 +1,4 @@
-/* General Styyles */
+/* General Styles */
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #f7f9fc;
@@ -150,18 +150,18 @@ th {
   cursor: not-allowed;
 }
 
-/* Example Animation / Video */
+/* Example Video Section */
 .animated-demo {
   margin: 20px auto;
   text-align: center;
 }
 
-.animated-demo video {
+.video-wrapper iframe {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
 
-/* Optional pulse animation if you want to show a pulsing circle */
+/* Optional pulse animation if you want a pulsing circle (unused) */
 .pulse-svg {
   animation: pulse 1s ease-in-out infinite;
 }
