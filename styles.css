@@ -25,7 +25,7 @@ h2 {
   margin-bottom: 10px;
 }
 
-/* Slide Visibility */
+/* Slide Visibility & Animation */
 .slide {
   display: none;
   animation: fadeIn 0.5s;
@@ -144,27 +144,30 @@ th {
   background-color: #005f73;
 }
 
-.next-button:disabled, .back-button:disabled {
+.next-button:disabled,
+.back-button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
-/* Animated Demo */
+/* Example Animation / Video */
 .animated-demo {
   margin: 20px auto;
   text-align: center;
 }
 
+/* Pulse animation (optional if user wants an animation) */
 .pulse-svg {
   animation: pulse 1s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.4); opacity: 0.6; }
-  100% { transform: scale(1); opacity: 1; }
+  0%   { transform: scale(1);   opacity: 1; }
+  50%  { transform: scale(1.4); opacity: 0.6; }
+  100% { transform: scale(1);   opacity: 1; }
 }
 
+/* Thank You Message */
 .message {
   text-align: center;
   font-size: 18px;
@@ -172,17 +175,36 @@ th {
   margin-top: 20px;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 600px) {
+/* Responsive Adjustments for Mobile and Tablet */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
   .container {
     padding: 15px;
   }
-  th, td {
+  table, th, td {
     font-size: 14px;
-    padding: 8px;
   }
   .next-button, .back-button {
     padding: 8px 16px;
     font-size: 14px;
+  }
+  .progress-svg {
+    width: 25px;
+    height: 5px;
+  }
+  .info-icon, .icon-tooltip {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  table, th, td {
+    font-size: 12px;
+  }
+  .next-button, .back-button {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
