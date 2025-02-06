@@ -1,4 +1,4 @@
-/* General Styyles */
+/* General Styles */
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #f7f9fc;
@@ -156,7 +156,12 @@ th {
   text-align: center;
 }
 
-/* Pulse animation (optional if user wants an animation) */
+.animated-demo video {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Optional pulse animation if you want to show a pulsing circle */
 .pulse-svg {
   animation: pulse 1s ease-in-out infinite;
 }
