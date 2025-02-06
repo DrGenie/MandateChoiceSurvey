@@ -28,9 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("example-back").addEventListener("click", prevSlide);
   document.getElementById("instr-back").addEventListener("click", prevSlide);
 
-  // SpeechSynthesis example
+  // Play explanation via SpeechSynthesis
   document.getElementById("play-explanation").addEventListener("click", () => {
-    const explanationText = "This example shows how each mandate attribute can influence your preference. Consider scope, threshold, coverage, incentives, exemptions, and cost. Decide if you'd keep the same preference or choose no mandate at all.";
+    const explanationText =
+      "This example shows how each mandate attribute can influence your preference. Consider scope, threshold, coverage, incentives, exemptions, and cost. Decide whether you'd keep the same choice or switch to no mandate at all.";
     const utterance = new SpeechSynthesisUtterance(explanationText);
     const voices = speechSynthesis.getVoices();
     const auVoice = voices.find(v => v.lang === "en-AU");
@@ -40,20 +41,19 @@ document.addEventListener("DOMContentLoaded", () => {
     speechSynthesis.speak(utterance);
   });
 
-  // Create dynamic tasks
+  // Generate the 9 scenario-based tasks
   generateTaskSlides();
 
-  // Gather all slides
+  // Gather all slides in array
   slides = Array.from(document.querySelectorAll(".slide"));
   showSlide(currentSlideIndex);
 });
 
-// Show the given slide index
 function showSlide(index) {
   slides.forEach((slide, i) => {
     slide.classList.toggle("active", i === index);
   });
-  // If it's a dynamic task slide, record start time
+  // If we're on a dynamic task slide, record the start time
   if (slides[index].classList.contains("task-slide")) {
     taskStartTime = Date.now();
   }
@@ -73,7 +73,6 @@ function prevSlide() {
   }
 }
 
-// Generate the 9 scenario-based tasks
 function generateTaskSlides() {
   const block1 = {
     block: 1,
@@ -297,7 +296,7 @@ function generateTaskSlides() {
     table.appendChild(tbody);
     taskSlide.appendChild(table);
 
-    // A form for user choices
+    // A form for the user’s choices
     const form = document.createElement("form");
     form.id = `form-task-${scenarioData.scenario}`;
     form.innerHTML = `
@@ -354,6 +353,7 @@ function generateTaskSlides() {
       saveResponse(form, responseTime);
       nextSlide();
       if (idx === scenarios.length - 1) {
+        // Attempt submission after a short delay
         setTimeout(submitResponses, 300);
       }
     });
@@ -364,7 +364,6 @@ function generateTaskSlides() {
   });
 }
 
-// Save individual task response
 function saveResponse(form, responseTime) {
   const formData = new FormData(form);
   const choice = formData.get("choice");
@@ -377,61 +376,95 @@ function saveResponse(form, responseTime) {
   });
 }
 
-// Submit responses via EmailJS
 function submitResponses() {
   let emailContent = "Survey Responses:\n\n";
   responses.forEach(resp => {
     emailContent += `Scenario: ${resp.scenario}\n`;
     emailContent += `Preferred Mandate: ${resp.choice}\n`;
-    emailContent += `Opt-out Choice: ${resp.not_choose}\n`;
+    emailContent += `If no mandate was possible, do you change?: ${resp.not_choose}\n`;
     emailContent += `Response Time (ms): ${resp.responseTime}\n\n`;
   });
 
-  // Adjust these parameters to match your own EmailJS template fields
   const templateParams = {
-    to_email: "mesfin.genie@newcastle.edu.au", // Change if needed
+    to_email: "mesfin.genie@newcastle.edu.au", // Or your target email
     subject: "Vaccine Mandate Survey Responses",
     message: emailContent,
     timestamp: new Date().toLocaleString()
   };
 
-  // Using your specified Service ID and Template ID
+  // Attempt to send via EmailJS
   emailjs.send("service_zp0gsia", "template_2qu14s5", templateParams)
     .then(() => {
       showThankYou();
-      alert("Your responses have been sent! Check your inbox for confirmation.");
+      alert("Your responses have been sent via email. Thank you!");
     }, (error) => {
       console.error("Submission failed:", error);
-      alert("Error submitting your responses. Check your EmailJS settings or your internet connection and try again.");
+      alert("Error submitting your responses via email. Please download your results instead.");
+      showThankYou(); // Show thank you slide anyway
+      showCSVDownload(); // Provide CSV fallback
     });
 }
 
-// Display the final thank-you message
 function showThankYou() {
   const container = document.getElementById("survey-container");
   container.innerHTML = `
     <div class="message">
       <h2>Thank You!</h2>
-      <p>Your responses have been submitted and emailed to the research team.</p>
-      <p>We appreciate your participation.</p>
+      <p>Your responses have been processed. If the email failed, use the CSV download below.</p>
+      <div id="csv-container" style="text-align:center; margin-top: 20px;"></div>
     </div>
   `;
+  showCSVDownload();
 }
 
-// Utility to capitalize attribute labels in the table
+/* 
+  Provide a CSV download link for fallback or extra confirmation. 
+  Called automatically if email fails, or after successful submission if needed.
+*/
+function showCSVDownload() {
+  const csvContainer = document.getElementById("csv-container");
+  if (!csvContainer) return;
+
+  const csvContent = convertResponsesToCSV(responses);
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "vaccine_mandate_survey_responses.csv";
+  link.textContent = "Download CSV of Responses";
+  link.style.display = "inline-block";
+  link.style.marginTop = "10px";
+  link.style.background = "#0a9396";
+  link.style.color = "#fff";
+  link.style.padding = "10px 15px";
+  link.style.borderRadius = "4px";
+  link.style.textDecoration = "none";
+  csvContainer.appendChild(link);
+}
+
+function convertResponsesToCSV(data) {
+  let csv = "Scenario,Choice,Opt-out,ResponseTime(ms)\n";
+  data.forEach(item => {
+    csv += `${item.scenario},${item.choice},${item.not_choose},${item.responseTime}\n`;
+  });
+  return csv;
+}
+
+// Utility to capitalize attribute labels
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// Short descriptions for tooltips
+// Detailed tooltips for each attribute
 function getAttributeDescription(attr) {
   const desc = {
-    scope: "Defines who must be vaccinated (e.g. only high-risk roles or everyone).",
-    threshold: "Sets the infection rate that triggers the mandate. Earlier triggers act sooner.",
-    coverage: "Vaccination percentage required to end the mandate. Higher coverage = stricter requirement.",
-    incentives: "Financial or time-off perks that encourage vaccination.",
-    exemption: "Acceptable reasons to refuse vaccination (medical, religious, or personal belief).",
-    cost: "Any out-of-pocket or time cost for getting vaccinated."
+    scope: "Defines the population subject to mandatory vaccination, e.g. high-risk workers or everyone.",
+    threshold: "Infection rate that activates the mandate—lower triggers mean earlier intervention.",
+    coverage: "Vaccination percentage needed before lifting the mandate. Higher coverage = stricter requirement.",
+    incentives: "Any rewards (paid leave, financial subsidies) encouraging people to vaccinate.",
+    exemption: "Permitted reasons to skip vaccination, e.g. medical only or broader personal beliefs.",
+    cost: "Out-of-pocket or time-related burdens, such as fees, transport, or lost wages."
   };
   return desc[attr] || "";
 }
@@ -440,13 +473,13 @@ function getAttributeDescription(attr) {
 function getIcon(attr, value) {
   if (attr === "scope") {
     return value.includes("High-risk")
-      ? `<span class="icon-tooltip" title="High-risk occupations only">⚠️</span>`
-      : `<span class="icon-tooltip" title="All occupations and public spaces">🌐</span>`;
+      ? `<span class="icon-tooltip" title="Only high-risk occupations.">⚠️</span>`
+      : `<span class="icon-tooltip" title="All occupations and public spaces.">🌐</span>`;
   }
   if (attr === "threshold") {
-    if (value.includes("50 cases")) return `<span class="icon-tooltip" title="Early trigger">🟢</span>`;
-    if (value.includes("100 cases")) return `<span class="icon-tooltip" title="Moderate trigger">🟠</span>`;
-    return `<span class="icon-tooltip" title="Late trigger">🔴</span>`;
+    if (value.includes("50 cases")) return `<span class="icon-tooltip" title="Early intervention threshold.">🟢</span>`;
+    if (value.includes("100 cases")) return `<span class="icon-tooltip" title="Moderate intervention threshold.">🟠</span>`;
+    return `<span class="icon-tooltip" title="Late intervention threshold.">🔴</span>`;
   }
   if (attr === "coverage") {
     let percentage = 0;
@@ -463,29 +496,29 @@ function getIcon(attr, value) {
   }
   if (attr === "incentives") {
     if (value.includes("No incentives")) {
-      return `<span class="icon-tooltip" title="No extra perks">🚫</span>`;
+      return `<span class="icon-tooltip" title="No special rewards.">🚫</span>`;
     } else if (value.includes("time off")) {
-      return `<span class="icon-tooltip" title="Paid time off">🕒</span>`;
+      return `<span class="icon-tooltip" title="Paid time off.">🕒</span>`;
     } else {
-      return `<span class="icon-tooltip" title="Financial rewards">💸</span>`;
+      return `<span class="icon-tooltip" title="Financial rewards (subsidies/discounts).">💸</span>`;
     }
   }
   if (attr === "exemption") {
     if (value.includes("Medical exemptions only")) {
-      return `<span class="icon-tooltip" title="Strictly medical reasons">🩺</span>`;
+      return `<span class="icon-tooltip" title="Strictly medical reasons.">🩺</span>`;
     }
     if (value.includes("broad personal belief")) {
-      return `<span class="icon-tooltip" title="Medical, religious, and personal reasons">🩺🙏💡</span>`;
+      return `<span class="icon-tooltip" title="Medical, religious, and personal beliefs.">🩺🙏💡</span>`;
     }
     if (value.includes("religious")) {
-      return `<span class="icon-tooltip" title="Medical and religious">🩺🙏</span>`;
+      return `<span class="icon-tooltip" title="Medical and religious reasons.">🩺🙏</span>`;
     }
   }
   if (attr === "cost") {
-    if (value.includes("A$0")) return `<span class="icon-tooltip" title="No cost">$0</span>`;
-    if (value.includes("A$5")) return `<span class="icon-tooltip" title="Low cost">$</span>`;
-    if (value.includes("A$20")) return `<span class="icon-tooltip" title="Moderate cost">$$</span>`;
-    if (value.includes("A$50")) return `<span class="icon-tooltip" title="High cost">$$$</span>`;
+    if (value.includes("A$0")) return `<span class="icon-tooltip" title="No cost to comply.">$0</span>`;
+    if (value.includes("A$5")) return `<span class="icon-tooltip" title="Low cost.">$</span>`;
+    if (value.includes("A$20")) return `<span class="icon-tooltip" title="Moderate cost.">$$</span>`;
+    if (value.includes("A$50")) return `<span class="icon-tooltip" title="High cost.">$$$</span>`;
   }
   return "";
 }
